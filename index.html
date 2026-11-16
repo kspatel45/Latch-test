@@ -383,16 +383,18 @@
         };
         
         for (let i = 1; i <= 16; i++) {
-            const hexId = i.toString(16).padStart(2, '0'); // 01, 02, ..., 09, 0a, 0b, 0c, 0d, 0e, 0f, 10
-            
-            // USB Defaults
-            defaultConfig.usb.latches[i] = { 
-                scanCmd: `u_scan${i}`, 
-                openFb: `u${i}_open`, 
-                closeFb: `u${i}_close`, 
-                testCmd: `u_test${i}`, 
-                testFb: `u${i}_ok` 
-            };
+    const hexId = i.toString(16).padStart(2, '0'); // 01, 02, ..., 0f, 10
+    const charId = String.fromCharCode(64 + i);    // A, B, ..., O, P
+    
+    // USB Defaults
+    defaultConfig.usb.latches[charId] = { 
+        scanCmd: `${charId}`, 
+        openFb: `${charId}open`, 
+        closeFb: `${charId}close`, 
+        testCmd: `${charId}`, 
+        testFb: `${charId}open`
+    };
+}
             
             // Pre-configured CAN Commands exact match from image
             defaultConfig.can.latches[i] = { 
