@@ -404,15 +404,16 @@
         for (let i = 1; i <= 17; i++) {
             const hexIdLower = i.toString(16).padStart(2, '0').toLowerCase();
             const hexIdUpper = i.toString(16).padStart(2, '0').toUpperCase();
-            const charId = String.fromCharCode(64 + i); // A, B, ..., P, Q
+            const smallChar = String.fromCharCode(96 + i);   // a, b, ..., p, q
+            const capitalChar = String.fromCharCode(64 + i); // A, B, ..., P, Q
             
-            // USB Defaults (Latches 1 - 17 using capital letters A - Q)
+            // USB Defaults: small letters for scanCmd & feedbacks, capital letters for testCmd
             defaultConfig.usb.latches[i] = { 
-                scanCmd: `${charId}`, 
-                openFb: `${charId}open`, 
-                closeFb: `${charId}close`, 
-                testCmd: `${charId}`, 
-                testFb: `${charId}open` 
+                scanCmd: `${smallChar}`, 
+                openFb: `${smallChar}open`, 
+                closeFb: `${smallChar}close`, 
+                testCmd: `${capitalChar}`, 
+                testFb: `${smallChar}open` 
             };
             
             // Pre-configured CAN Commands (Latches 1 - 17)
@@ -1141,13 +1142,13 @@
             
             updateConfigFromInputs(currentAdminMode);
 
-            localStorage.setItem('signifi_latch_config_v11', JSON.stringify(config));
+            localStorage.setItem('signifi_latch_config_v12', JSON.stringify(config));
             showNotification("Configuration saved successfully!", "success");
         }
 
         function resetDefaults() {
             if (confirm("Reset all configurations back to default patterns?")) {
-                localStorage.removeItem('signifi_latch_config_v11');
+                localStorage.removeItem('signifi_latch_config_v12');
                 config = JSON.parse(JSON.stringify(defaultConfig));
                 document.getElementById('config-baud').value = config.baudRate;
                 document.getElementById('config-calib-cmd').value = config.calibrationCmd;
@@ -1194,7 +1195,7 @@
         }
 
         function loadConfig() {
-            const saved = localStorage.getItem('signifi_latch_config_v11');
+            const saved = localStorage.getItem('signifi_latch_config_v12');
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
