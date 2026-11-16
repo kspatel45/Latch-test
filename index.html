@@ -383,20 +383,19 @@
         };
         
         for (let i = 1; i <= 16; i++) {
-    const hexId = i.toString(16).padStart(2, '0'); // 01, 02, ..., 0f, 10
-    const charId = String.fromCharCode(64 + i);    // A, B, ..., O, P
-    
-    // USB Defaults
-    defaultConfig.usb.latches[charId] = { 
-        scanCmd: `${charId}`, 
-        openFb: `${charId}open`, 
-        closeFb: `${charId}close`, 
-        testCmd: `${charId}`, 
-        testFb: `${charId}open`
-    };
-}
+            const hexId = i.toString(16).padStart(2, '0'); // 01, 02, ..., 0f, 10
+            const charId = String.fromCharCode(64 + i);    // A, B, ..., O, P
             
-            // Pre-configured CAN Commands exact match from image
+            // USB Defaults (Indexed by slot number 1-16, using letters A-P in commands)
+            defaultConfig.usb.latches[i] = { 
+                scanCmd: `${charId}`, 
+                openFb: `${charId}open`, 
+                closeFb: `${charId}close`, 
+                testCmd: `${charId}`, 
+                testFb: `${charId}open`
+            };
+            
+            // Pre-configured CAN Commands
             defaultConfig.can.latches[i] = { 
                 scanCmd: `t01f251${hexId}`, 
                 openFb: `t01f3736f${hexId}`, 
@@ -674,9 +673,9 @@
                     if (stopSignal) break;
 
                     const latchConfig = activeConfig[i];
-                    const scanCmd = latchConfig.scanCmd ? latchConfig.scanCmd.trim() : '';
-                    const openFb = latchConfig.openFb ? latchConfig.openFb.trim().toLowerCase() : '';
-                    const closeFb = latchConfig.closeFb ? latchConfig.closeFb.trim().toLowerCase() : '';
+                    const scanCmd = latchConfig && latchConfig.scanCmd ? latchConfig.scanCmd.trim() : '';
+                    const openFb = latchConfig && latchConfig.openFb ? latchConfig.openFb.trim().toLowerCase() : '';
+                    const closeFb = latchConfig && latchConfig.closeFb ? latchConfig.closeFb.trim().toLowerCase() : '';
 
                     if (!scanCmd) {
                         log("Warn", `Slot ${i}: No scan cmd. Skipping.`);
@@ -766,9 +765,9 @@
                     if (idx > 0) await sleep(500);
 
                     const latchConfig = activeConfig[i];
-                    const openCmd = latchConfig.testCmd ? latchConfig.testCmd.trim() : ''; 
-                    const scanCmd = latchConfig.scanCmd ? latchConfig.scanCmd.trim() : '';
-                    const passFb = latchConfig.testFb ? latchConfig.testFb.trim().toLowerCase() : '';
+                    const openCmd = latchConfig && latchConfig.testCmd ? latchConfig.testCmd.trim() : ''; 
+                    const scanCmd = latchConfig && latchConfig.scanCmd ? latchConfig.scanCmd.trim() : '';
+                    const passFb = latchConfig && latchConfig.testFb ? latchConfig.testFb.trim().toLowerCase() : '';
 
                     if (!openCmd) {
                         testResults.push({ slot: i, status: 'SKIPPED', passed: true });
@@ -1003,13 +1002,13 @@
             
             updateConfigFromInputs(currentAdminMode);
 
-            localStorage.setItem('signifi_latch_config_v5', JSON.stringify(config));
+            localStorage.setItem('signifi_latch_config_v6', JSON.stringify(config));
             showNotification("Configuration saved successfully!", "success");
         }
 
         function resetDefaults() {
             if (confirm("Reset all USB and CAN command configurations back to default patterns?")) {
-                localStorage.removeItem('signifi_latch_config_v5');
+                localStorage.removeItem('signifi_latch_config_v6');
                 config = JSON.parse(JSON.stringify(defaultConfig));
                 document.getElementById('config-baud').value = config.baudRate;
                 document.getElementById('config-calib-cmd').value = config.calibrationCmd;
@@ -1037,7 +1036,7 @@
         }
 
         function loadConfig() {
-            const saved = localStorage.getItem('signifi_latch_config_v5');
+            const saved = localStorage.getItem('signifi_latch_config_v6');
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
